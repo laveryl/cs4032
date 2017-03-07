@@ -20,17 +20,18 @@ def _threads(runner):
 			if not receive: break
 
 				#RECEIVING A MESSAGE AND ENDING THE THREAD
-			if receive[:12]=="End_Thread":
+			if receive[:12]=="KILL_SERVICE":
 				print "Ending The Thread!!"
+				threadSocket.sendall("KILLED!")
 				thread_socket.close()
 				active=False
 
 				#SENDING A MESSAGE
-			elif receive[:4]=="Message":
+			elif receive[:4]=="HELO":
 				print "Message Received: "+receive
 				
 				#REPORT BACK
-				msg="%sIP:%s\nPort:%s"%(receive,str(thread_address),thread_socket)
+				msg="%sIP:%s\nPort:%s\nStudentID:12309111\n"%(receive,str(thread_address),int(sys.argv[2]))
 				thread_socket.sendall(msg)
 				print "Message Sent"	
 
@@ -43,15 +44,15 @@ def _threads(runner):
 				#KILL THE CONNECTION
 		if active==False:
 			os.kill(os.getpid(),signal.SIGINT)					
-	
-	work_socket.close()
+	thread_socket.shutdown(SHUT_RDWR)
+	thread_socket.close()
 
 def _server(hostname,port_number,numb_of_threads):
 
-	sock=socket(AF_INET,SOCK_STREAM)
-	sock.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
-	sock.bind((hostname,port_number))
-	sock.listen(10)	
+	sockie=socket(AF_INET,SOCK_STREAM)
+	sockie.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
+	sockie.bind((hostname,port_number))
+	sockie.listen(10)	
 
 	pool=Queue(numb_of_threads)
 
